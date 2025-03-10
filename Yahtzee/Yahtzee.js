@@ -9,6 +9,7 @@ let diceImages = [
 
 let diceValues = [null, null, null, null, null];  
 let frozenDice = [false, false, false, false, false]; 
+let yahtzeeCount = 0;
 
 function createDiceImage(diceValue, index) {
     const image = new Image();
@@ -31,6 +32,13 @@ function randomRoll() {
     let sixsScore = 0;
     let fourOfAKindScore = 0; 
     let threeOfAKindScore = 0;
+    let fullHouseScore = 0;
+    let kleineStraatScore = 0;
+    let groteStraatScore = 0;
+    let yahtzeeScore = 0;
+    let yahtzeeBonus = 0;
+    let chanceScore = 0;
+
 
     diceContainers.forEach(container => {
         container.innerHTML = ''; 
@@ -72,7 +80,6 @@ function randomRoll() {
     
     for (let value in counts) {
         if (counts[value] >= 4) {
-            
             fourOfAKindScore = value * 4; 
             break;  
         }
@@ -86,6 +93,52 @@ function randomRoll() {
         }
     }
 
+    //full house
+    const countValues = Object.values(counts);
+    if (countValues.includes(3) && countValues.includes(2)) {
+        fullHouseScore = 25; 
+    }
+    
+    //kleine straat
+    const sortedValues = [...new Set(diceValues)].sort((a, b) => a - b);  
+    for (let i = 0; i <= sortedValues.length - 4; i++) {
+        const sequence = sortedValues.slice(i, i + 4);
+        if (sequence[3] - sequence[0] === 3) {  
+            kleineStraatScore = 30;
+            break;
+        }
+    }
+
+    //grote straat
+    const largeStraightSequences = [
+        [1, 2, 3, 4, 5],
+        [2, 3, 4, 5, 6]
+    ];
+
+    largeStraightSequences.forEach(sequence => {
+        if (sequence.every(val => diceValues.includes(val))) {
+            groteStraatScore = 40;
+        }
+    });
+
+    //yahtzee
+    if (new Set(diceValues).size === 1) {
+        yahtzeeScore = 50; 
+    }
+    if (yahtzeeCount > 1) {
+
+        yahtzeeBonus = 100; 
+    }
+    
+    //chance
+    chanceScore = diceValues.reduce((sum, currentValue) => sum + currentValue, 0);
+    
+    //total score
+    const totalScore = onesCount + twosScore + threesScore + foursScore + fivesScore + sixsScore +
+    fourOfAKindScore + threeOfAKindScore + fullHouseScore + kleineStraatScore + 
+    groteStraatScore + yahtzeeScore + yahtzeeBonus + chanceScore;
+
+    
 
     document.getElementById('onesCount').textContent = "enen: " + onesCount;
     document.getElementById('twosCount').textContent = "tweeen: " + twosScore;
@@ -95,6 +148,13 @@ function randomRoll() {
     document.getElementById('sixsCount').textContent = "zessen: " + sixsScore;
     document.getElementById('fourOfAKind').textContent = "Four of a Kind: " + fourOfAKindScore; 
     document.getElementById('threeOfAKind').textContent = "Three of a kind" + threeOfAKindScore; 
+    document.getElementById('fullHouse').textContent = "Full House: " + fullHouseScore;
+    document.getElementById('kleineStaat').textContent = "Kleine Straat: " + kleineStraatScore;
+    document.getElementById('groteStaat').textContent = "Grote Straat: " + groteStraatScore;
+    document.getElementById('yahtzee').textContent = "Yahtzee: " + yahtzeeScore;
+    document.getElementById('yahtzeeBonus').textContent = "Yahtzee Bonus: " + yahtzeeBonus;
+    document.getElementById('chance').textContent = "Chance: " + chanceScore;
+    document.getElementById('totalScore').textContent = "Total Score: " + totalScore;
 
 
     document.querySelectorAll('.dice').forEach((diceImage) => {
@@ -103,7 +163,7 @@ function randomRoll() {
             frozenDice[index] = !frozenDice[index]; 
 
             if (frozenDice[index]) {
-                diceImage.style.outline = '5px solid red'; 
+                diceImage.style.outline = '5px solid black'; 
             } else {
                 diceImage.style.outline = '';  
             }
@@ -112,3 +172,4 @@ function randomRoll() {
 }
 
 document.getElementById('myButton').addEventListener('click', randomRoll);
+
