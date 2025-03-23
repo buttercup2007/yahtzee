@@ -10,9 +10,8 @@ let diceImages = [
 let diceValues = [null, null, null, null, null];
 let frozenDice = [false, false, false, false, false];
 let rollCount = 0;
-let lockedScores = {}; 
-let scoreLockedThisRound = false; 
-
+let lockedScores = {};
+let scoreLockedThisRound = false;
 
 function createDiceImage(diceValue, index) {
   const image = new Image();
@@ -23,16 +22,13 @@ function createDiceImage(diceValue, index) {
   image.classList.add("dice");
   image.setAttribute("data-index", index);
 
-  
   image.addEventListener("click", () => toggleDiceLock(index));
 
   return image;
 }
 
-
 function randomRoll() {
   if (rollCount >= 3) {
-    
     alert("You've already rolled 3 times! Now, choose a score.");
     resetRound();
     return;
@@ -40,7 +36,6 @@ function randomRoll() {
 
   rollCount++;
 
-  
   diceValues.forEach((value, index) => {
     if (!frozenDice[index]) {
       const randomIndex = Math.floor(Math.random() * diceImages.length);
@@ -60,24 +55,21 @@ function randomRoll() {
   updateScores();
 }
 
-
 function resetRound() {
   rollCount = 0;
   diceValues = [null, null, null, null, null];
   frozenDice = [false, false, false, false, false];
 
- 
   scoreLockedThisRound = false;
 
   const scoreCells = document.querySelectorAll(".score");
   scoreCells.forEach((scoreCell) => {
     scoreCell.classList.remove("locked"); 
+    
   });
 
-  
   updateScores();
 }
-
 
 function updateScores() {
   let onesCount = 0;
@@ -93,7 +85,6 @@ function updateScores() {
   let groteStraatScore = 0;
   let yahtzeeScore = 0;
   let chanceScore = 0;
-
 
   if (!lockedScores["onesCount"]) {
     diceValues.forEach((diceValue) => {
@@ -143,7 +134,6 @@ function updateScores() {
     sixsScore = lockedScores["sixsCount"];
   }
 
-  
   // Four of a kind
   if (!lockedScores["fourOfAKind"]) {
     const counts = {};
@@ -229,9 +219,12 @@ function updateScores() {
   }
 
   // Chance
-  chanceScore = diceValues.reduce((sum, currentValue) => sum + currentValue, 0);
+  if (!lockedScores["chance"]) {
+    chanceScore = diceValues.reduce((sum, currentValue) => sum + currentValue, 0);
+  } else {
+    chanceScore = lockedScores["chance"];
+  }
 
-  
   document.getElementById("onesCount").textContent = "Ones: " + onesCount;
   document.getElementById("twosCount").textContent = "Twos: " + twosScore;
   document.getElementById("threesCount").textContent = "Threes: " + threesScore;
@@ -261,21 +254,17 @@ function Locked(categoryId) {
   const categoryElement = document.getElementById(categoryId);
   const score = parseInt(categoryElement.textContent.split(": ")[1]);
 
-
   lockedScores[categoryId] = score;
 
-  
   scoreLockedThisRound = true;
 
-  
-  categoryElement.classList.add("locked");
-}
 
+  categoryElement.classList.add("locked-score");
+}
 
 function toggleDiceLock(index) {
   frozenDice[index] = !frozenDice[index];
   const diceElement = document.querySelectorAll(".dice")[index];
-
 
   if (frozenDice[index]) {
     diceElement.classList.add("locked");
@@ -284,11 +273,9 @@ function toggleDiceLock(index) {
   }
 }
 
-
 document.querySelectorAll(".score").forEach((scoreElement) => {
   scoreElement.addEventListener("click", (event) => {
     const categoryId = event.target.id;
-   
     Locked(categoryId);
   });
 });
