@@ -30,7 +30,6 @@ function createDiceImage(diceValue, index) {
 function randomRoll() {
   if (rollCount >= 3) {
     alert("You've already rolled 3 times! Now, choose a score.");
-    resetRound();
     return;
   }
 
@@ -45,7 +44,7 @@ function randomRoll() {
 
   const diceContainers = [document.getElementById("diceContainer1")];
   diceContainers.forEach((container) => {
-    container.innerHTML = ""; 
+    container.innerHTML = "";
     diceValues.forEach((diceValue, index) => {
       const diceImage = createDiceImage(diceValue, index);
       container.appendChild(diceImage);
@@ -59,13 +58,11 @@ function resetRound() {
   rollCount = 0;
   diceValues = [null, null, null, null, null];
   frozenDice = [false, false, false, false, false];
-
   scoreLockedThisRound = false;
 
   const scoreCells = document.querySelectorAll(".score");
   scoreCells.forEach((scoreCell) => {
-    scoreCell.classList.remove("locked"); 
-    
+    scoreCell.classList.remove("locked");
   });
 
   updateScores();
@@ -91,7 +88,7 @@ function updateScores() {
       if (diceValue === 1) onesCount++;
     });
   } else {
-    onesCount = lockedScores["onesCount"]; 
+    onesCount = lockedScores["onesCount"];
   }
 
   if (!lockedScores["twosCount"]) {
@@ -210,13 +207,16 @@ function updateScores() {
   }
 
   // Yahtzee
-  if (!lockedScores["yahtzee"]) {
-    if (new Set(diceValues).size === 1) {
-      yahtzeeScore = 50;
-    }
+  if ("yahtzee" in lockedScores) {
+  yahtzeeScore = lockedScores["yahtzee"];
+} else {
+  const uniqueValues = new Set(diceValues);
+  if (uniqueValues.size === 1 && diceValues[0] !== null) {
+    yahtzeeScore = 50;
   } else {
-    yahtzeeScore = lockedScores["yahtzee"];
+    yahtzeeScore = 0;
   }
+}
 
   // Chance
   if (!lockedScores["chance"]) {
@@ -246,7 +246,7 @@ function Locked(categoryId) {
     return;
   }
 
-  if (lockedScores[categoryId]) {
+  if (lockedScores[categoryId] !== undefined) {
     alert("This score has already been locked.");
     return;
   }
@@ -255,12 +255,25 @@ function Locked(categoryId) {
   const score = parseInt(categoryElement.textContent.split(": ")[1]);
 
   lockedScores[categoryId] = score;
-
   scoreLockedThisRound = true;
-
-
   categoryElement.classList.add("locked-score");
+
+
+  let total = 0;
+  for (let key in lockedScores) {
+    total += lockedScores[key];
+  }
+  document.getElementById("totalScore").textContent = "Total Score: " + total;
+
+  
+  const totalCategories = 13; 
+  if (Object.keys(lockedScores).length === totalCategories) {
+    setTimeout(() => {
+      alert("🎉 You've finished playing Yahtzee!\nYour total score is: " + total);
+    }, 100); 
+  }
 }
+
 
 function toggleDiceLock(index) {
   frozenDice[index] = !frozenDice[index];
@@ -281,4 +294,38 @@ document.querySelectorAll(".score").forEach((scoreElement) => {
 });
 
 document.getElementById("myButton").addEventListener("click", randomRoll);
+
+
+document.getElementById("nextRoundButton").addEventListener("click", () => {
+  if (!scoreLockedThisRound) {
+    alert("You must lock a score before starting the next round.");
+    return;
+  }
+
+  resetRound();
+
+  const diceContainer = document.getElementById("diceContainer1");
+  diceContainer.innerHTML = ""; 
+});
+
+document.getElementById("resetGameButton").addEventListener("click", () => {
+  resetRound();
+  rollCount = 0;
+  lockedScores = {};
+  scoreLockedThisRound = false;
+  diceValues = [null, null, null, null, null];
+  frozenDice = [false, false, false, false, false];
+
+  
+  document.querySelectorAll(".score").forEach((cell) => {
+    cell.textContent = cell.id.replace(/([A-Z])/g, ' $1').trim() + ": 0";
+    cell.classList.remove("locked-score");
+  });
+
+  
+  document.getElementById("totalScore").textContent = "Total Score: 0";
+
+  const diceContainers = [document.getElementById("diceContainer1")];
+  diceContainers.forEach((container) => (container.innerHTML = ""));
+});
 
