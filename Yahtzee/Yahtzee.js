@@ -286,7 +286,7 @@ function Locked(categoryId) {
   const totalCategories = 13;
   if (Object.keys(lockedScores).length === totalCategories) {
     setTimeout(() => {
-      alert("\uD83C\uDF89 You've finished playing Yahtzee!\nYour total score is: " + total);
+      alert(" 🎉 You've finished playing Yahtzee!\nYour total score is: " + total);
     }, 100);
   }
 }
